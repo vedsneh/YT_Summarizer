@@ -21,10 +21,10 @@ def download_audio(video_url):
     audio_path = os.path.join(output_path, f"{unique_filename}.m4a")
 
     ydl_opts = {
-        'format': 'bestaudio[ext=m4a]/bestaudio/best',
+        'format': 'bestaudio[ext=m4a]/bestaudio',
         'outtmpl': audio_path,
-        'postprocessors': [],  # 🚫 Disable all postprocessing
-        'quiet': True
+        'quiet': True,
+        'postprocessors': []  # ❌ Make sure no ffmpeg is triggered
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -65,7 +65,22 @@ def create_pdf(summary, filename="summary.pdf"):
 
 # ------------------------------ Streamlit UI ------------------------------
 st.set_page_config(page_title="YouTube Video Summarizer", layout="centered")
-st.title("🎬 YouTube Video Summarizer (Streamlit + Whisper + HuggingFace)")
+st.markdown(
+    """
+    <div style='text-align: center; padding: 20px 0;'>
+        <h1 style='font-size: 2.5em; margin-bottom: 0.2em;'>🎬 SaranshAI</h1>
+        <h3 style='font-weight: normal; color: #A9A9A9;'>Your AI-powered video distiller</h3>
+        <p style='max-width: 600px; margin: auto; font-size: 1.05em; line-height: 1.6;'>
+            Get concise and clear summaries of any YouTube video in minutes!<br>
+            🎧 <b>Powered by</b> OpenAI's <i>Whisper</i> for transcription and Hugging Face for summarization.<br>
+            🚫 No sign-up, no ads — just paste the video link and let AI do the work!
+        </p>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+
 
 video_url = st.text_input("🔗 Paste YouTube video URL here:")
 
@@ -102,5 +117,17 @@ if st.button("Generate Summary"):
             st.download_button("📄 Download Summary as PDF", f, file_name="summary.pdf", mime="application/pdf")
 
         st.markdown(f"**🎥 Title:** {info['title']}")
-        st.markdown(f"**📅 Published:** {info.get('upload_date', 'N/A')}")
+        from datetime import datetime
+
+        upload_date_raw = info.get('upload_date', '')
+        if upload_date_raw:
+            try:
+                formatted_date = datetime.strptime(upload_date_raw, '%Y%m%d').strftime('%B %d, %Y')
+            except:
+                formatted_date = upload_date_raw
+        else:
+            formatted_date = 'N/A'
+
+        st.markdown(f"**📅 Published:** {formatted_date}")
+
         st.markdown(f"**👁️ Views:** {info.get('view_count', 'N/A')}")
