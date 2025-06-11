@@ -1,0 +1,10 @@
+streamlit
+openai>=1.0.0
+yt-dlp
+whisper
+fpdf
+python-dotenv
+ffmpeg-python
+torch  # Required by Whisper
+pydub
+git+https://github.com/openai/whisper.git
