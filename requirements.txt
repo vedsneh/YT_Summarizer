@@ -1,7 +1,7 @@
 streamlit
 openai>=1.0.0
 yt-dlp
-whisper
+faster-whisper
 fpdf
 python-dotenv
 ffmpeg-python

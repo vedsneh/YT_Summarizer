@@ -2,16 +2,16 @@ import streamlit as st
 import os
 import uuid
 import yt_dlp
-import whisper
 from fpdf import FPDF
 from transformers import pipeline
+from faster_whisper import WhisperModel
 
-# Load Whisper model
-whisper_model = whisper.load_model("base")
+# Load Faster Whisper model
+model_size = "base"  # use "tiny" if streamlit app runs out of memory
+whisper_model = WhisperModel(model_size, device="cpu", compute_type="int8")
 
 # Hugging Face Summarizer
 summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
-
 
 # Audio downloader
 def download_audio(video_url):
@@ -40,12 +40,10 @@ def download_audio(video_url):
 
     return mp3_path, info
 
-
-# Transcribe audio
+# Transcribe audio using faster-whisper
 def transcribe(audio_path):
-    result = whisper_model.transcribe(audio_path)
-    return result["text"]
-
+    segments, _ = whisper_model.transcribe(audio_path)
+    return " ".join([segment.text for segment in segments])
 
 # Summarize transcript
 def generate_summary(text):
@@ -58,7 +56,6 @@ def generate_summary(text):
         summary.append(summary_text)
     return "\n\n".join(summary)
 
-
 # Create PDF
 def create_pdf(summary, filename="summary.pdf"):
     pdf = FPDF()
@@ -70,12 +67,11 @@ def create_pdf(summary, filename="summary.pdf"):
     pdf.output(pdf_path)
     return pdf_path
 
-
 # ------------------------------
 # Streamlit UI
 # ------------------------------
 st.set_page_config(page_title="YouTube Video Summarizer", layout="centered")
-st.title("🎬 YouTube Video Summarizer (Free - Hugging Face)")
+st.title("🎬 YouTube Video Summarizer (Free - Hugging Face + Faster Whisper)")
 
 video_url = st.text_input("🔗 Paste YouTube video URL here:")
 
@@ -92,7 +88,7 @@ if st.button("Generate Summary"):
                 st.error(f"❌ Failed to download audio: {e}")
                 st.stop()
 
-        with st.spinner("🎧 Transcribing with Whisper..."):
+        with st.spinner("🎧 Transcribing with Faster Whisper..."):
             try:
                 transcript = transcribe(audio_path)
             except Exception as e:
@@ -116,3 +112,4 @@ if st.button("Generate Summary"):
         st.markdown(f"**🎥 Title:** {info['title']}")
         st.markdown(f"**📅 Published:** {info.get('upload_date', 'N/A')}")
         st.markdown(f"**👁️ Views:** {info.get('view_count', 'N/A')}")
+
