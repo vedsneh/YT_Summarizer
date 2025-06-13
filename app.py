@@ -6,7 +6,6 @@ import whisper
 from fpdf import FPDF
 from transformers import pipeline
 
-# Load Whisper model (use 'tiny' for Streamlit Cloud)
 whisper_model = whisper.load_model("tiny")
 
 # Hugging Face Summarizer
@@ -24,7 +23,7 @@ def download_audio(video_url):
         'format': 'bestaudio[ext=m4a]/bestaudio',
         'outtmpl': audio_path,
         'quiet': True,
-        'postprocessors': []  # ❌ Make sure no ffmpeg is triggered
+        'postprocessors': []  
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -62,8 +61,6 @@ def create_pdf(summary, filename="summary.pdf"):
     pdf.output(pdf_path)
     return pdf_path
 
-
-# ------------------------------ Streamlit UI ------------------------------
 st.set_page_config(page_title="YouTube Video Summarizer", layout="centered")
 st.markdown(
     """
